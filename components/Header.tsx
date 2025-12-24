@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, Sparkles, Mic, Activity } from 'lucide-react';
+import { ShoppingCart, Menu, X, ChevronRight, ShieldCheck, Microscope } from 'lucide-react';
 
 interface HeaderProps {
   cartCount: number;
@@ -10,17 +10,18 @@ interface HeaderProps {
 }
 
 const BrandLogo = () => (
-  <div className="relative flex items-center justify-center">
-    {/* Dynamic Background Glows */}
-    <div className="absolute inset-[-6px] bg-hh-green/20 rounded-full blur-xl group-hover:bg-hh-orange/30 transition-colors duration-700 animate-pulse"></div>
-    <div className="absolute inset-0 bg-gradient-to-tr from-hh-green to-hh-orange opacity-10 rounded-full group-hover:opacity-20 transition-opacity"></div>
-    
-    <div className="relative w-11 h-11 bg-white rounded-xl shadow-lg border border-gray-100 flex items-center justify-center overflow-hidden group-hover:rounded-full group-hover:scale-110 group-hover:rotate-[360deg] transition-all duration-700 ease-in-out">
-      {/* Custom SVG Logo - Bio-Science "H" */}
-      <svg viewBox="0 0 40 40" className="w-7 h-7 fill-none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 8V32M28 8V32M12 20H28" stroke="currentColor" strokeWidth="6" strokeLinecap="round" className="text-hh-dark group-hover:text-hh-green transition-colors duration-500" />
-        <path d="M22 14L28 20L22 26" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-hh-orange" />
-        <circle cx="12" cy="12" r="2" fill="white" className="animate-pulse" />
+  <div className="relative flex items-center justify-center group">
+    {/* High contrast visual anchor */}
+    <div className="absolute inset-[-12px] bg-hh-green/40 rounded-full blur-2xl group-hover:bg-hh-green/60 transition-all duration-700 opacity-0 group-hover:opacity-100"></div>
+    <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center bg-hh-dark rounded-2xl shadow-2xl border-2 border-hh-green/30 group-hover:border-hh-green transition-all transform group-hover:scale-105">
+      <svg viewBox="0 0 100 100" className="w-10 h-10 sm:w-12 sm:h-12" xmlns="http://www.w3.org/2000/svg">
+        {/* Aggressive Monolith H Bars */}
+        <rect x="18" y="15" width="16" height="70" rx="4" fill="#FFFFFF" />
+        <rect x="66" y="15" width="16" height="70" rx="4" fill="#FFFFFF" />
+        {/* The Biological Core Connector */}
+        <rect x="34" y="42" width="32" height="16" rx="2" fill="#4CAF50" />
+        <circle cx="50" cy="50" r="12" fill="#4CAF50" className="animate-pulse" />
+        <circle cx="50" cy="50" r="5" fill="#FFFFFF" />
       </svg>
     </div>
   </div>
@@ -30,11 +31,10 @@ const Header: React.FC<HeaderProps> = ({ cartCount, onOpenCart, setCurrentPage, 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: 'Shop', id: 'shop' },
-    { label: 'Quiz', id: 'quiz' },
-    { label: 'Studio', id: 'visualizer' },
+    { label: 'Fuel Stack', id: 'shop' },
+    { label: 'Bio-Quiz', id: 'quiz' },
+    { label: 'Asset Lab', id: 'visualizer' },
     { label: 'Live Lab', id: 'livelab' },
-    { label: 'About', id: 'about' },
   ];
 
   const handleNav = (id: any) => {
@@ -43,85 +43,75 @@ const Header: React.FC<HeaderProps> = ({ cartCount, onOpenCart, setCurrentPage, 
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-40 border-b border-gray-100 shadow-sm transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-        {/* Enhanced Branding Section */}
+    <header className="fixed top-0 left-0 right-0 bg-white z-[60] border-b-2 border-gray-100 shadow-xl transition-all">
+      <div className="max-w-7xl mx-auto px-4 h-24 sm:h-32 flex items-center justify-between">
         <div 
-          className="flex items-center gap-4 cursor-pointer group" 
+          className="flex items-center gap-4 sm:gap-8 cursor-pointer group" 
           onClick={() => handleNav('home')}
         >
           <BrandLogo />
-
           <div className="flex flex-col">
-            <h1 className="font-heading font-black text-xl md:text-2xl tracking-tighter uppercase leading-none flex items-center">
-              <span className="text-hh-dark group-hover:tracking-normal transition-all duration-500">Hello</span>
-              <span className="text-hh-green ml-1 relative">
-                Healthy
-                <span className="absolute -bottom-1 left-0 w-0 h-1 bg-hh-orange group-hover:w-full transition-all duration-500 rounded-full"></span>
-              </span>
+            <h1 className="font-heading font-black text-2xl sm:text-4xl tracking-[-0.12em] uppercase leading-none italic">
+              <span className="text-hh-dark">HELLO</span>
+              <span className="text-hh-green">HEALTHY</span>
             </h1>
-            <div className="flex items-center gap-2 mt-1.5 overflow-hidden">
-              <Activity className="w-2.5 h-2.5 text-hh-orange group-hover:animate-bounce" />
-              <span className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.4em] text-gray-400 group-hover:text-hh-orange transition-colors duration-500 whitespace-nowrap">
-                Energetic Source
-              </span>
+            <div className="flex items-center gap-2 mt-2">
+              <Microscope className="w-3 h-3 text-hh-green" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">Biological Dominance</span>
             </div>
           </div>
         </div>
 
-        <nav className="hidden lg:flex items-center gap-4">
+        <nav className="hidden lg:flex items-center gap-2">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleNav(item.id)}
-              className={`font-heading text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 flex items-center gap-2 px-4 py-2 rounded-xl ${
+              className={`font-heading text-xs font-black uppercase tracking-[0.2em] transition-all px-8 py-5 rounded-2xl ${
                 currentPage === item.id 
-                  ? 'bg-hh-dark text-white shadow-xl shadow-black/10' 
-                  : 'text-gray-500 hover:text-hh-green hover:bg-hh-green/5'
-              } ${item.id === 'livelab' ? 'text-hh-orange border border-hh-orange/20 ring-4 ring-hh-orange/5 animate-pulse' : ''}`}
+                  ? 'bg-hh-dark text-white shadow-2xl shadow-black/30 translate-y-[-4px]' 
+                  : 'text-gray-500 hover:text-hh-green hover:bg-gray-50'
+              }`}
             >
-              {item.id === 'visualizer' && <Sparkles className="w-3 h-3 text-hh-green" />}
-              {item.id === 'livelab' && <Mic className="w-3 h-3" />}
               {item.label}
             </button>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-4">
-          <button onClick={onOpenCart} className="relative p-2.5 text-gray-700 hover:text-hh-green transition-all hover:scale-110 bg-gray-50 rounded-full">
-            <ShoppingCart className="w-5 h-5" />
+        <div className="flex items-center gap-3 sm:gap-6">
+          <button onClick={onOpenCart} className="relative p-5 text-hh-dark bg-hh-light hover:bg-hh-dark hover:text-white rounded-3xl transition-all shadow-inner group overflow-hidden">
+            <div className="absolute inset-0 bg-hh-green translate-y-full group-hover:translate-y-0 transition-transform duration-300 opacity-20"></div>
+            <ShoppingCart className="w-7 h-7 relative z-10" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-hh-orange text-white text-[9px] font-black px-1.5 py-0.5 rounded-full ring-2 ring-white animate-bounce">
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[11px] font-black px-2.5 py-1 rounded-full ring-4 ring-white shadow-lg z-20">
                 {cartCount}
               </span>
             )}
           </button>
-          <button className="lg:hidden p-2 text-hh-dark" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button className="lg:hidden p-5 text-hh-dark hover:bg-gray-100 rounded-3xl transition-colors border border-gray-100" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
           </button>
         </div>
       </div>
 
-      {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-gray-100 p-8 absolute top-20 left-0 right-0 animate-in slide-in-from-top duration-500 shadow-2xl z-50 rounded-b-[2rem]">
-          <nav className="flex flex-col gap-6">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNav(item.id)}
-                className={`text-left font-heading font-black uppercase tracking-widest text-sm flex items-center justify-between group ${currentPage === item.id ? 'text-hh-green' : 'text-gray-600'}`}
-              >
-                <div className="flex items-center gap-4">
-                  {item.id === 'visualizer' && <Sparkles className="w-5 h-5 text-hh-green" />}
-                  {item.id === 'livelab' && <Mic className="w-5 h-5 text-hh-orange" />}
-                  {item.label}
-                </div>
-                <X className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity -rotate-45" />
-              </button>
-            ))}
-          </nav>
-        </div>
-      )}
+      <div className={`lg:hidden fixed inset-0 top-24 bg-hh-dark/60 backdrop-blur-lg z-50 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)} />
+      
+      <div className={`lg:hidden absolute top-24 left-0 right-0 bg-white border-b-4 border-hh-green transition-all duration-500 z-[51] shadow-2xl rounded-b-[4rem] overflow-hidden ${isMobileMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <nav className="p-10 flex flex-col gap-4">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleNav(item.id)}
+              className={`text-left font-heading font-black uppercase tracking-[0.3em] text-lg flex items-center justify-between p-8 rounded-[2.5rem] transition-all ${
+                currentPage === item.id ? 'bg-hh-green text-white shadow-2xl' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {item.label}
+              <ChevronRight className={`w-6 h-6 ${currentPage === item.id ? 'translate-x-1' : 'opacity-30'}`} />
+            </button>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 };

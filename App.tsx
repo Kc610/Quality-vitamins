@@ -12,14 +12,15 @@ import LiveLab from './pages/LiveLab';
 import Cart from './components/Cart';
 import ProductModal from './components/ProductModal';
 import ChatBot from './components/ChatBot';
+import { X, Play } from 'lucide-react';
 import { Product, CartItem } from './types';
-import { INITIAL_PRODUCTS } from './constants';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'quiz' | 'about' | 'contact' | 'visualizer' | 'livelab'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -54,14 +55,14 @@ const App: React.FC = () => {
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'home': return <Home navigate={setCurrentPage} addToCart={addToCart} onViewDetails={setSelectedProduct} />;
+      case 'home': return <Home navigate={setCurrentPage} addToCart={addToCart} onViewDetails={setSelectedProduct} onPlayVideo={() => setIsVideoModalOpen(true)} />;
       case 'shop': return <Shop addToCart={addToCart} onViewDetails={setSelectedProduct} />;
       case 'quiz': return <Quiz navigate={setCurrentPage} />;
       case 'visualizer': return <Visualizer />;
       case 'livelab': return <LiveLab />;
       case 'about': return <About />;
       case 'contact': return <Contact />;
-      default: return <Home navigate={setCurrentPage} addToCart={addToCart} onViewDetails={setSelectedProduct} />;
+      default: return <Home navigate={setCurrentPage} addToCart={addToCart} onViewDetails={setSelectedProduct} onPlayVideo={() => setIsVideoModalOpen(true)} />;
     }
   };
 
@@ -74,7 +75,7 @@ const App: React.FC = () => {
         currentPage={currentPage}
       />
       
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-14 sm:pt-20">
         {renderPage()}
       </main>
 
@@ -93,6 +94,26 @@ const App: React.FC = () => {
         onClose={() => setSelectedProduct(null)} 
         onAddToCart={addToCart}
       />
+
+      {/* Science Video Modal */}
+      {isVideoModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-hh-dark/95 backdrop-blur-xl animate-in fade-in duration-300">
+          <button 
+            onClick={() => setIsVideoModalOpen(false)}
+            className="absolute top-6 right-6 text-white hover:text-hh-green transition-colors z-10"
+          >
+            <X className="w-10 h-10" />
+          </button>
+          <div className="w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative">
+            <video 
+              autoPlay 
+              controls 
+              className="w-full h-full object-cover"
+              src="https://videos.pexels.com/video-files/3125907/3125907-uhd_2560_1440_25fps.mp4"
+            ></video>
+          </div>
+        </div>
+      )}
 
       <ChatBot />
     </div>

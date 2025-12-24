@@ -14,7 +14,6 @@ const LiveLab: React.FC = () => {
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
-  // PCM Decoding Logic as required by Gemini Live API guidelines
   const decode = (base64: string) => {
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -69,13 +68,11 @@ const LiveLab: React.FC = () => {
     try {
       if (!(await (window as any).aistudio.hasSelectedApiKey())) {
         await (window as any).aistudio.openSelectKey();
-        // Proceed as per race condition instructions
       }
 
       setIsConnecting(true);
       setError(null);
 
-      // Create a fresh instance to use latest API key
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
@@ -128,12 +125,18 @@ const LiveLab: React.FC = () => {
           },
           onerror: (e: any) => {
             console.error("Live API Error:", e);
-            const isEntityError = e?.message?.includes("Requested entity was not found") || e?.type === "error";
-            if (isEntityError) {
-              setError("Session failed. This model requires a Paid API Key (Billing).");
+            const errMsg = typeof e === 'string' ? e : (e.message || '');
+            const isBillingError = 
+              errMsg.includes("Requested entity was not found") || 
+              errMsg.includes("RESOURCE_EXHAUSTED") || 
+              errMsg.includes("quota exceeded") ||
+              e.type === "error"; // Some socket errors report type only
+
+            if (isBillingError) {
+              setError("Session failed. A Paid API Key is required for this model.");
               (window as any).aistudio.openSelectKey();
             } else {
-              setError("Laboratory connection failed. Ensure mic access and billing status.");
+              setError("Laboratory connection failed. Check mic and billing status.");
             }
             setIsActive(false);
             setIsConnecting(false);
@@ -149,7 +152,7 @@ const LiveLab: React.FC = () => {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } 
           },
           outputAudioTranscription: {},
-          systemInstruction: "You are Atlas, the hands-free Performance Coach for Hello Healthy. Your voice is encouraging and science-focused. You help users with workout form, timing, and plant-based nutrition during their active training sessions.",
+          systemInstruction: "You are Atlas, the hands-free Performance Coach for Hello Healthy. Your voice is encouraging and science-focused.",
         }
       });
 
@@ -157,9 +160,10 @@ const LiveLab: React.FC = () => {
 
     } catch (err: any) {
       console.error(err);
-      const isEntityError = err.message?.includes("Requested entity was not found");
-      setError(isEntityError ? "A paid API key is required. Please re-select a paid project." : "Mic access or valid API key required.");
-      if (isEntityError) (window as any).aistudio.openSelectKey();
+      const errMsg = typeof err === 'string' ? err : (err.message || '');
+      const isBillingError = errMsg.includes("Requested entity was not found") || errMsg.includes("RESOURCE_EXHAUSTED") || errMsg.includes("quota exceeded");
+      setError(isBillingError ? "A paid API key is required. Please re-select a paid project." : "Mic access or valid API key required.");
+      if (isBillingError) (window as any).aistudio.openSelectKey();
       setIsConnecting(false);
     }
   };
@@ -174,7 +178,6 @@ const LiveLab: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-hh-dark text-white pt-24 pb-32 px-4 relative overflow-hidden">
-      {/* Background Neural Waves */}
       <div className={`absolute inset-0 opacity-20 pointer-events-none transition-all duration-1000 ${isActive ? 'scale-110 rotate-3' : 'scale-100'}`}>
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,#4CAF5033,transparent_70%)]"></div>
       </div>
@@ -187,11 +190,10 @@ const LiveLab: React.FC = () => {
            <h1 className="font-heading text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-none">
              LIVE <span className="text-hh-green">COACH</span>
            </h1>
-           <p className="text-gray-400 font-medium uppercase tracking-[0.2em] text-xs">Real-Time Biological Instruction • Hands Free</p>
+           <p className="text-gray-400 font-medium uppercase tracking-[0.2em] text-xs">Real-Time Biological Instruction</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Main Visualizer */}
           <div className="lg:col-span-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[3rem] p-12 flex flex-col items-center justify-center min-h-[450px] relative overflow-hidden">
             <div className={`absolute inset-0 transition-opacity duration-1000 bg-gradient-to-tr from-hh-green/10 to-hh-orange/5 ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
             
@@ -209,7 +211,7 @@ const LiveLab: React.FC = () => {
                   </div>
                   <div className="space-y-4">
                     <p className="text-hh-green font-black uppercase tracking-[0.4em] text-[10px] animate-pulse">Session Active</p>
-                    <p className="text-2xl font-serif italic text-white/90">"I'm listening. Ask me about your form or post-workout fuel."</p>
+                    <p className="text-2xl font-serif italic text-white/90">"I'm listening..."</p>
                     <div className="max-w-md mx-auto p-4 bg-white/5 rounded-2xl min-h-[60px] text-xs text-gray-400 italic">
                       {transcription || "..."}
                     </div>
@@ -222,29 +224,24 @@ const LiveLab: React.FC = () => {
                   </div>
                   <div className="space-y-4">
                     <h3 className="text-2xl font-heading font-black uppercase italic tracking-tighter">Ready to Begin?</h3>
-                    <p className="text-gray-400 max-w-sm mx-auto font-medium">Activate your coach for real-time hands-free performance science.</p>
+                    <p className="text-gray-400 max-w-sm mx-auto font-medium">Activate your coach for real-time performance science.</p>
                   </div>
                 </>
               )}
             </div>
           </div>
 
-          {/* Sidebar Stats & Controls */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[2.5rem] p-8 space-y-6">
                <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500">Live Lab Metrics</h4>
                <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
                      <span className="text-xs font-bold text-gray-400">Latency</span>
-                     <span className="text-xs font-black text-hh-green tracking-tighter">32ms (Hyper-Fast)</span>
+                     <span className="text-xs font-black text-hh-green tracking-tighter">32ms</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
                      <span className="text-xs font-bold text-gray-400">Precision</span>
-                     <span className="text-xs font-black text-hh-orange tracking-tighter">99.8% Science-First</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
-                     <span className="text-xs font-bold text-gray-400">Modality</span>
-                     <span className="text-xs font-black text-white tracking-tighter">Native PCM Audio</span>
+                     <span className="text-xs font-black text-hh-orange tracking-tighter">99.8%</span>
                   </div>
                </div>
             </div>
@@ -259,7 +256,7 @@ const LiveLab: React.FC = () => {
 
             <div className="p-6 bg-hh-orange/5 rounded-2xl border border-hh-orange/10 flex gap-3">
               <Lock className="w-5 h-5 text-hh-orange flex-shrink-0" />
-              <p className="text-[10px] text-hh-orange font-bold uppercase leading-relaxed">Secure Node Active • Paid Gemini API Project Required</p>
+              <p className="text-[10px] text-hh-orange font-bold uppercase leading-relaxed">Paid Gemini API Project Required</p>
             </div>
             
             <p className="text-[9px] text-center text-gray-500 font-bold uppercase tracking-widest">
