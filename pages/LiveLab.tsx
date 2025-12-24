@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { Mic, MicOff, Zap, ShieldCheck, Activity, Info, Lock, Loader2, AlertCircle } from 'lucide-react';
@@ -65,15 +66,16 @@ const LiveLab: React.FC = () => {
   };
 
   const startSession = async () => {
-    if (!(await (window as any).aistudio.hasSelectedApiKey())) {
-      await (window as any).aistudio.openSelectKey();
-    }
-
-    setIsConnecting(true);
-    setError(null);
-
     try {
-      // Create a new instance right before making the call to ensure latest API key
+      if (!(await (window as any).aistudio.hasSelectedApiKey())) {
+        await (window as any).aistudio.openSelectKey();
+        // Proceed as per race condition instructions
+      }
+
+      setIsConnecting(true);
+      setError(null);
+
+      // Create a fresh instance to use latest API key
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
@@ -92,7 +94,6 @@ const LiveLab: React.FC = () => {
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const pcmBlob = createBlob(inputData);
-              // CRITICAL: Solely rely on sessionPromise resolves
               sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob }));
             };
             source.connect(scriptProcessor);
@@ -106,9 +107,8 @@ const LiveLab: React.FC = () => {
               setTranscription('');
             }
 
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            const base64Audio = message.serverContent?.modelTurn?.parts?.find(p => p.inlineData)?.inlineData?.data;
             if (base64Audio && audioContextRef.current) {
-              // Schedule each new audio chunk to start at this time ensures smooth, gapless playback.
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioContextRef.current.currentTime);
               const audioBuffer = await decodeAudioData(decode(base64Audio), audioContextRef.current, 24000, 1);
               const source = audioContextRef.current.createBufferSource();
@@ -128,15 +128,20 @@ const LiveLab: React.FC = () => {
           },
           onerror: (e: any) => {
             console.error("Live API Error:", e);
-            const msg = e.message || "";
-            if (msg.includes("Requested entity was not found")) {
-              setError("API Key expired or invalid. Please re-select a paid key.");
+            const isEntityError = e?.message?.includes("Requested entity was not found") || e?.type === "error";
+            if (isEntityError) {
+              setError("Session failed. This model requires a Paid API Key (Billing).");
               (window as any).aistudio.openSelectKey();
             } else {
-              setError("Laboratory connection failed. Ensure mic access.");
+              setError("Laboratory connection failed. Ensure mic access and billing status.");
             }
+            setIsActive(false);
+            setIsConnecting(false);
           },
-          onclose: () => setIsActive(false),
+          onclose: () => {
+            setIsActive(false);
+            setIsConnecting(false);
+          },
         },
         config: {
           responseModalities: [Modality.AUDIO],
@@ -153,7 +158,7 @@ const LiveLab: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       const isEntityError = err.message?.includes("Requested entity was not found");
-      setError(isEntityError ? "API Key expired. Please re-select a paid key." : "Mic access or API key required.");
+      setError(isEntityError ? "A paid API key is required. Please re-select a paid project." : "Mic access or valid API key required.");
       if (isEntityError) (window as any).aistudio.openSelectKey();
       setIsConnecting(false);
     }
@@ -254,8 +259,12 @@ const LiveLab: React.FC = () => {
 
             <div className="p-6 bg-hh-orange/5 rounded-2xl border border-hh-orange/10 flex gap-3">
               <Lock className="w-5 h-5 text-hh-orange flex-shrink-0" />
-              <p className="text-[10px] text-hh-orange font-bold uppercase leading-relaxed">Secure Node Active • Paid Gemini API Session Required</p>
+              <p className="text-[10px] text-hh-orange font-bold uppercase leading-relaxed">Secure Node Active • Paid Gemini API Project Required</p>
             </div>
+            
+            <p className="text-[9px] text-center text-gray-500 font-bold uppercase tracking-widest">
+              Learn about <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="text-hh-green underline">Paid Tier Access</a>
+            </p>
           </div>
         </div>
 

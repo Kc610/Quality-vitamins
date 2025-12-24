@@ -22,12 +22,17 @@ const ChatBot: React.FC = () => {
   const handleSend = async (text: string = input) => {
     if (!text.trim() || isTyping) return;
 
-    const userMessage: ChatMessage = { role: 'user', text };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsTyping(true);
-
     try {
+      if (!(await (window as any).aistudio.hasSelectedApiKey())) {
+        await (window as any).aistudio.openSelectKey();
+        // Proceed as per race condition instructions
+      }
+
+      const userMessage: ChatMessage = { role: 'user', text };
+      setMessages(prev => [...prev, userMessage]);
+      setInput('');
+      setIsTyping(true);
+
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const chat = ai.chats.create({
         model: 'gemini-3-pro-preview',
@@ -55,9 +60,15 @@ const ChatBot: React.FC = () => {
       const responseText = result.text || "Connection lost to the central cortex. Pulse again.";
       
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Coach Error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "The lab is currently undergoing a thermal reset. Check back in a moment." }]);
+      const isEntityError = error.message?.includes("Requested entity was not found");
+      const errorMsg = isEntityError 
+        ? "The laboratory requires a Paid API Key (Billing) to function. Please re-select your credentials." 
+        : "The lab is currently undergoing a thermal reset. Check back in a moment.";
+      
+      setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
+      if (isEntityError) await (window as any).aistudio.openSelectKey();
     } finally {
       setIsTyping(false);
     }
@@ -193,7 +204,7 @@ const ChatBot: React.FC = () => {
           </form>
           <div className="flex items-center justify-center gap-3 mt-8">
             <div className="h-[1px] w-12 bg-gray-100"></div>
-            <p className="text-[8px] text-center text-gray-300 uppercase font-black tracking-[0.4em]">Node Link Active • Gemini 3 Pro</p>
+            <p className="text-[8px] text-center text-gray-300 uppercase font-black tracking-[0.4em]">Node Link Active • Paid Gemini API Tier</p>
             <div className="h-[1px] w-12 bg-gray-100"></div>
           </div>
         </div>

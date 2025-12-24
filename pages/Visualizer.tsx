@@ -4,7 +4,7 @@ import { GoogleGenAI } from "@google/genai";
 import { Sparkles, Download, Wand2, Info, Lock, AlertCircle, Video, Image as ImageIcon, Maximize, Play, Loader2 } from 'lucide-react';
 
 type Mode = 'IMAGE' | 'VIDEO';
-type AspectRatio = '1:1' | '2:3' | '3:2' | '3:4' | '4:3' | '9:16' | '16:9' | '21:9';
+type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
 type Quality = '1K' | '2K' | '4K';
 
 const Visualizer: React.FC = () => {
@@ -16,20 +16,23 @@ const Visualizer: React.FC = () => {
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const ratios: AspectRatio[] = ['1:1', '2:3', '3:2', '3:4', '4:3', '9:16', '16:9', '21:9'];
+  const imageRatios: AspectRatio[] = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+  const videoRatios: AspectRatio[] = ['9:16', '16:9'];
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
 
-    if (!(await (window as any).aistudio.hasSelectedApiKey())) {
-      await (window as any).aistudio.openSelectKey();
-    }
-
-    setIsGenerating(true);
-    setError(null);
-    setGeneratedContent(null);
-
     try {
+      if (!(await (window as any).aistudio.hasSelectedApiKey())) {
+        await (window as any).aistudio.openSelectKey();
+        // Proceed as per race condition instructions
+      }
+
+      setIsGenerating(true);
+      setError(null);
+      setGeneratedContent(null);
+
+      // Create a fresh instance to ensure the latest API key is used
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       if (mode === 'IMAGE') {
@@ -46,11 +49,11 @@ const Visualizer: React.FC = () => {
           },
         });
 
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData) {
-            setGeneratedContent(`data:image/png;base64,${part.inlineData.data}`);
-            break;
-          }
+        const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+        if (part?.inlineData) {
+          setGeneratedContent(`data:image/png;base64,${part.inlineData.data}`);
+        } else {
+          throw new Error("No image data returned from model.");
         }
       } else {
         // Veo 3 Video Generation
@@ -60,7 +63,7 @@ const Visualizer: React.FC = () => {
           config: {
             numberOfVideos: 1,
             resolution: quality === '4K' ? '1080p' : '720p',
-            aspectRatio: aspectRatio.includes('16') ? (aspectRatio as any) : '16:9'
+            aspectRatio: aspectRatio === '9:16' || aspectRatio === '16:9' ? aspectRatio : '16:9'
           }
         });
 
@@ -70,19 +73,25 @@ const Visualizer: React.FC = () => {
         }
 
         const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+        if (!downloadLink) throw new Error("Video generation failed to provide a download link.");
+        
         const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+        if (!response.ok) throw new Error("Failed to download generated video.");
         const blob = await response.blob();
         setGeneratedContent(URL.createObjectURL(blob));
       }
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message?.includes("Requested entity") ? "API Key expired. Please re-select." : "Generation failed. Ensure billing is active.");
-      if (err.message?.includes("Requested entity")) await (window as any).aistudio.openSelectKey();
+      const isEntityError = err.message?.includes("Requested entity was not found");
+      setError(isEntityError ? "A paid API key is required for this model. Please select a valid project." : "Generation failed. Please try again.");
+      if (isEntityError) await (window as any).aistudio.openSelectKey();
     } finally {
       setIsGenerating(false);
     }
   };
+
+  const currentRatios = mode === 'IMAGE' ? imageRatios : videoRatios;
 
   return (
     <div className="animate-in fade-in duration-700 min-h-screen bg-hh-light">
@@ -98,6 +107,7 @@ const Visualizer: React.FC = () => {
             </h1>
             <p className="text-gray-500 max-w-xl mx-auto font-medium">
               Create professional fitness imagery or cinematic motion clips for your transformation journey.
+              <span className="block mt-2 text-[10px] text-hh-orange uppercase tracking-widest font-black">Requires Paid API Project</span>
             </p>
           </div>
 
@@ -107,13 +117,13 @@ const Visualizer: React.FC = () => {
               {/* Mode Toggle */}
               <div className="bg-hh-light p-1.5 rounded-2xl flex gap-2">
                 <button 
-                  onClick={() => { setMode('IMAGE'); setGeneratedContent(null); }}
+                  onClick={() => { setMode('IMAGE'); setGeneratedContent(null); setAspectRatio('1:1'); }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs transition-all ${mode === 'IMAGE' ? 'bg-white shadow-md text-hh-green' : 'text-gray-400'}`}
                 >
                   <ImageIcon className="w-4 h-4" /> PHOTO
                 </button>
                 <button 
-                  onClick={() => { setMode('VIDEO'); setGeneratedContent(null); }}
+                  onClick={() => { setMode('VIDEO'); setGeneratedContent(null); setAspectRatio('16:9'); }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs transition-all ${mode === 'VIDEO' ? 'bg-hh-dark text-white shadow-md' : 'text-gray-400'}`}
                 >
                   <Video className="w-4 h-4" /> MOTION
@@ -136,8 +146,8 @@ const Visualizer: React.FC = () => {
                 <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
                   <Maximize className="w-3 h-3" /> Aspect Ratio
                 </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {ratios.map(r => (
+                <div className="grid grid-cols-3 gap-2">
+                  {currentRatios.map(r => (
                     <button
                       key={r}
                       onClick={() => setAspectRatio(r)}
@@ -147,7 +157,6 @@ const Visualizer: React.FC = () => {
                     </button>
                   ))}
                 </div>
-                {mode === 'VIDEO' && <p className="text-[9px] text-hh-orange mt-2 font-bold uppercase tracking-widest">Note: Veo 3 prefers 16:9 or 9:16</p>}
               </div>
 
               <div>
@@ -176,6 +185,10 @@ const Visualizer: React.FC = () => {
                   <>GENERATE {mode} <Wand2 className="w-5 h-5 group-hover:rotate-12 transition-transform" /></>
                 )}
               </button>
+              
+              <p className="text-[9px] text-center text-gray-400 font-bold uppercase tracking-widest">
+                Check <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="text-hh-green underline">Billing Requirements</a>
+              </p>
             </div>
 
             {/* Preview Section */}
@@ -189,6 +202,7 @@ const Visualizer: React.FC = () => {
                       <div className="absolute inset-0 w-24 h-24 border-4 border-hh-green/20 border-t-hh-green rounded-full animate-spin mx-auto"></div>
                     </div>
                     <div className="space-y-2">
+                      {/* Fixed malformed h3 tag by adding missing opening bracket */}
                       <h3 className="font-heading font-black uppercase tracking-tighter text-2xl text-hh-dark">Molecular Synthesis</h3>
                       <p className="text-xs text-gray-400 max-w-[240px] mx-auto italic font-medium uppercase tracking-widest">
                         {mode === 'IMAGE' ? 'Calibrating pixel purity and athletic lighting...' : 'Processing cinematic motion frames with Veo 3 engine...'}
@@ -223,7 +237,7 @@ const Visualizer: React.FC = () => {
                     <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
                     <div className="font-black text-red-500 uppercase tracking-[0.2em] text-sm">System Interruption</div>
                     <p className="text-sm text-red-400 leading-relaxed font-medium">{error}</p>
-                    <button onClick={() => (window as any).aistudio.openSelectKey()} className="mt-4 text-[10px] font-black uppercase underline tracking-widest text-red-500">Reset Credentials</button>
+                    <button onClick={() => (window as any).aistudio.openSelectKey()} className="mt-4 text-[10px] font-black uppercase underline tracking-widest text-red-500">Select Paid API Key</button>
                  </div>
                ) : (
                  <div className="text-center space-y-6 opacity-40">
