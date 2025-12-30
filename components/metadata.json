@@ -1,8 +1,0 @@
-{
-  "name": "Hello Healthy - Modern Supplement Store",
-  "description": "A high-energy, clean, and modern e-commerce platform for lab-tested purity supplements, featuring a personalized transformation quiz and plant-based science.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
-}
