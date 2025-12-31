@@ -1,0 +1,4 @@
+﻿cd [path-to-your-wordpress-root]/wp-content/reactpress/apps/
+npx create-vite [Hello Healthy - Modern Supplement Store] --template react
+cd [Hello Healthy - Modern Supplement Store]
+npm install
