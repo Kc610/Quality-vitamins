@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
-import { X, Send, Zap, Sparkles, User, Activity, AlertCircle, Key, RefreshCw, Volume2, VolumeX, Headphones, TrendingUp } from 'lucide-react';
-import { ChatMessage } from '../types';
+import { X, Send, User, Activity, Key, RefreshCw, Volume2, VolumeX, Headphones, TrendingUp } from 'lucide-react';
+import { ChatMessage } from '../types.ts';
 
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +17,7 @@ const ChatBot: React.FC = () => {
   
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  const resumeAudio = () => {
+  const initAudio = () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
     }
@@ -62,7 +62,7 @@ const ChatBot: React.FC = () => {
 
   const speakText = async (text: string) => {
     if (!isVoiceEnabled) return;
-    resumeAudio();
+    initAudio();
 
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -95,12 +95,12 @@ const ChatBot: React.FC = () => {
   const handleSend = async (text: string = input) => {
     if (!text.trim() || isTyping) return;
     
-    resumeAudio();
+    initAudio();
 
     try {
       if (!(await (window as any).aistudio.hasSelectedApiKey())) {
         await (window as any).aistudio.openSelectKey();
-        return; // Don't proceed until key is selected
+        return; 
       }
 
       setErrorStatus('NONE');
@@ -151,10 +151,15 @@ const ChatBot: React.FC = () => {
     }
   };
 
+  const toggleOpen = () => {
+    initAudio();
+    setIsOpen(!isOpen);
+  };
+
   return (
     <>
       <button 
-        onClick={() => { setIsOpen(!isOpen); resumeAudio(); }}
+        onClick={toggleOpen}
         className={`fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-[120] w-20 h-20 sm:w-24 sm:h-24 rounded-[2rem] flex items-center justify-center transition-all shadow-[0_30px_60px_rgba(76,175,80,0.5)] group border-4 border-white ${isOpen ? 'bg-hh-dark' : 'bg-hh-green hover:scale-110 active:scale-95'}`}
       >
         {isOpen ? (
@@ -169,7 +174,6 @@ const ChatBot: React.FC = () => {
 
       <div className={`fixed bottom-32 right-4 sm:bottom-36 sm:right-10 z-[120] w-[calc(100%-2rem)] sm:w-[380px] h-[70vh] max-h-[600px] bg-white rounded-[3rem] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.4)] border-2 border-gray-100 flex flex-col overflow-hidden transition-all duration-500 transform ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
         
-        {/* Header - Solid Background */}
         <div className="p-6 bg-hh-dark text-white flex items-center justify-between relative flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-hh-green rounded-2xl flex items-center justify-center border-2 border-white/10 animate-pulse">
@@ -184,14 +188,13 @@ const ChatBot: React.FC = () => {
             </div>
           </div>
           <button 
-            onClick={() => { setIsVoiceEnabled(!isVoiceEnabled); resumeAudio(); }}
+            onClick={() => { setIsVoiceEnabled(!isVoiceEnabled); initAudio(); }}
             className={`p-4 rounded-xl transition-all border ${isVoiceEnabled ? 'bg-hh-green border-hh-green text-hh-dark scale-105' : 'bg-white/10 border-white/10 text-gray-400'}`}
           >
             {isVoiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </button>
         </div>
 
-        {/* Messages Container - Non-Transparent */}
         <div ref={scrollRef} className="flex-grow p-6 overflow-y-auto space-y-8 bg-white scroll-smooth no-scrollbar">
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
@@ -228,7 +231,6 @@ const ChatBot: React.FC = () => {
           )}
         </div>
 
-        {/* Input Area - Solid */}
         <div className="p-6 border-t border-gray-100 bg-white flex-shrink-0">
           <form className="flex gap-3" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
             <input 

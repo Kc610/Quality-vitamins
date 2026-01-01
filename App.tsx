@@ -1,19 +1,19 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import Shop from './pages/Shop';
-import Quiz from './pages/Quiz';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Visualizer from './pages/Visualizer';
-import LiveLab from './pages/LiveLab';
-import Cart from './components/Cart';
-import ProductModal from './components/ProductModal';
-import ChatBot from './components/ChatBot';
+import Header from './components/Header.tsx';
+import Footer from './components/Footer.tsx';
+import Home from './pages/Home.tsx';
+import Shop from './pages/Shop.tsx';
+import Quiz from './pages/Quiz.tsx';
+import About from './pages/About.tsx';
+import Contact from './pages/Contact.tsx';
+import Visualizer from './pages/Visualizer.tsx';
+import LiveLab from './pages/LiveLab.tsx';
+import Cart from './components/Cart.tsx';
+import ProductModal from './components/ProductModal.tsx';
+import ChatBot from './components/ChatBot.tsx';
 import { X, Play } from 'lucide-react';
-import { Product, CartItem } from './types';
+import { Product, CartItem } from './types.ts';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'quiz' | 'about' | 'contact' | 'visualizer' | 'livelab'>('home');

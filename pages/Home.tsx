@@ -1,9 +1,9 @@
 
 import React from 'react';
-import Hero from '../components/Hero';
-import ProductCard from '../components/ProductCard';
-import { INITIAL_PRODUCTS } from '../constants';
-import { Product } from '../types';
+import Hero from '../components/Hero.tsx';
+import ProductCard from '../components/ProductCard.tsx';
+import { INITIAL_PRODUCTS } from '../constants.tsx';
+import { Product } from '../types.ts';
 import { ShieldCheck, Leaf, Activity, Star, ArrowRight, Zap, Sparkles, Microscope, Lock, CheckCircle2 } from 'lucide-react';
 
 interface HomeProps {
