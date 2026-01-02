@@ -1,5 +1,5 @@
 
-import { Category, Product, QuizQuestion } from './types';
+import { Category, Product, QuizQuestion } from './types.ts';
 
 export const COLORS = {
   primary: '#4CAF50',

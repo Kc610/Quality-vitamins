@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
-import { CartItem } from '../types';
+import { CartItem } from '../types.ts';
 
 interface CartProps {
   isOpen: boolean;
@@ -16,16 +16,13 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, onUpdateQ
 
   return (
     <>
-      {/* Overlay */}
       <div 
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
       
-      {/* Panel */}
       <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-white z-[60] shadow-2xl transition-transform duration-500 ease-out transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
-          {/* Header */}
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-heading font-extrabold text-2xl uppercase italic tracking-tighter">Your <span className="text-hh-green">Stack</span></h2>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -33,7 +30,6 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, onUpdateQ
             </button>
           </div>
 
-          {/* Items */}
           <div className="flex-grow overflow-y-auto p-6 space-y-6">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-10">
@@ -76,7 +72,6 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemove, onUpdateQ
             )}
           </div>
 
-          {/* Footer */}
           {items.length > 0 && (
             <div className="p-6 border-t border-gray-100 bg-gray-50">
               <div className="flex justify-between mb-2">

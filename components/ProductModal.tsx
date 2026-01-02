@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Product } from '../types';
+import { Product } from '../types.ts';
 import { X, ShieldCheck, CheckCircle2, ShoppingCart, Star } from 'lucide-react';
 
 interface ProductModalProps {
@@ -20,12 +20,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onAddToCa
       />
       
       <div className="relative bg-white w-full max-w-5xl max-h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row overflow-hidden animate-in zoom-in-95 duration-300">
-        {/* Close Button Mobile */}
         <button onClick={onClose} className="absolute top-4 right-4 z-10 p-2 bg-gray-100 rounded-full lg:hidden">
           <X className="w-5 h-5" />
         </button>
 
-        {/* Image Section */}
         <div className="lg:w-1/2 bg-hh-light p-8 lg:p-12 flex items-center justify-center relative min-h-[300px]">
            <div className="absolute top-8 left-8">
               <div className="px-3 py-1 bg-hh-green text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
@@ -35,7 +33,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onAddToCa
            <img src={product.image} alt={product.name} className="max-w-full max-h-full object-contain drop-shadow-2xl" />
         </div>
 
-        {/* Info Section */}
         <div className="lg:w-1/2 p-8 lg:p-12 overflow-y-auto">
           <div className="flex flex-col h-full">
             <div className="mb-8">

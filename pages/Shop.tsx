@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
-import ProductCard from '../components/ProductCard';
-import { INITIAL_PRODUCTS } from '../constants';
-import { Category, Product } from '../types';
+import ProductCard from '../components/ProductCard.tsx';
+import { INITIAL_PRODUCTS } from '../constants.tsx';
+import { Category, Product } from '../types.ts';
 import { Filter, SlidersHorizontal, Search } from 'lucide-react';
 
 interface ShopProps {

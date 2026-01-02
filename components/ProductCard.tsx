@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Product } from '../types';
+import { Product } from '../types.ts';
 import { ShoppingCart, Star, ShieldCheck, Eye, Zap, AlertCircle, Sparkles, TrendingUp, Microscope } from 'lucide-react';
 
 interface ProductCardProps {
@@ -60,12 +60,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewD
         
         {renderBadge()}
         
-        {/* Lab Certification Indicator */}
         <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-xl p-4 rounded-3xl shadow-2xl border border-gray-100 group-hover:bg-hh-green transition-all duration-500 z-20">
           <Microscope className="w-7 h-7 text-hh-green group-hover:text-white" />
         </div>
 
-        {/* Hover Action Overlay */}
         <div className="absolute inset-0 bg-hh-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center gap-6 z-10 backdrop-blur-[2px]">
            <button 
               onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { QUIZ_QUESTIONS } from '../constants';
-import { Category } from '../types';
+import { QUIZ_QUESTIONS } from '../constants.tsx';
+import { Category } from '../types.ts';
 import { ChevronRight, ChevronLeft, Target, Trophy, Sparkles, ShoppingBag, Activity, ShieldCheck } from 'lucide-react';
 
 interface QuizProps {
