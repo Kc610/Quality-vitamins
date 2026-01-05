@@ -1,4 +1,5 @@
 
+
 export enum Category {
   AMINO = 'Amino Acids & Blends',
   PRE_WORKOUT = 'Pre-Workout Supplements',
@@ -46,4 +47,5 @@ export interface QuizQuestion {
 export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
+  citations?: { uri: string; title: string; }[];
 }
