@@ -1,4 +1,4 @@
-﻿cd [path-to-your-wordpress-root]/wp-content/reactpress/apps/
-npx create-vite [Hello Healthy - Modern Supplement Store] --template react
-cd [Hello Healthy - Modern Supplement Store]
+cd /home/dh_3h7khi/hellohealthy.online/wp-content/reactpress/apps
+npx create-vite Hello Healthy | Biological Performance --template react
+cd Hello Healthy | Biological Performance
 npm install

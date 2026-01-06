@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -9,8 +8,10 @@ import App from './App.tsx';
  */
 const mount = () => {
   const container = document.getElementById('root');
+
+  // ROBUST MOUNT: If root node is not yet available, retry after short interval
   if (!container) {
-    console.error("[CRITICAL] Global Root Node missing from DOM.");
+    setTimeout(mount, 100);
     return;
   }
 
@@ -32,18 +33,18 @@ const mount = () => {
         
         // System identity log
         console.log(
-          `%c HELLO HEALTHY %c BIOLOGICAL LINK ESTABLISHED %c NODE: v1.0.4-LATEST `,
+          `%c HELLO HEALTHY %c BIOLOGICAL LINK ESTABLISHED %c NODE: v1.0.5-STABLE `,
           "background: #4CAF50; color: #111; font-weight: 900; padding: 4px 8px; border-radius: 4px 0 0 4px;",
           "background: #111; color: #4CAF50; font-weight: 900; padding: 4px 8px; border: 1px solid #4CAF50;",
           "background: #333; color: #888; font-weight: 400; padding: 4px 8px; border-radius: 0 4px 4px 0;"
         );
         
         console.log(
-          "%c[STATUS]%c Neural engine synchronized. Performance modules active.",
+          "%c[STATUS]%c Neural engine synchronized. All performance modules active.",
           "color: #4CAF50; font-weight: bold;",
           "color: #888;"
         );
-      }, 500);
+      }, 300); // Slightly faster transition
     });
 
   } catch (err) {
@@ -53,7 +54,7 @@ const mount = () => {
   }
 };
 
-// Ensure document is interactive before establishing link
+// Initial trigger
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   mount();
 } else {
