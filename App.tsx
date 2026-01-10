@@ -9,14 +9,15 @@ import About from './pages/About.tsx';
 import Contact from './pages/Contact.tsx';
 import Visualizer from './pages/Visualizer.tsx';
 import LiveLab from './pages/LiveLab.tsx';
-import Community from './pages/Community.tsx'; // Import Community page
+import DataLab from './pages/DataLab.tsx';
+import Community from './pages/Community.tsx';
 import Cart from './components/Cart.tsx';
 import ProductModal from './components/ProductModal.tsx';
 import ChatBot from './components/ChatBot.tsx';
 import { Product, CartItem } from './types.ts';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'quiz' | 'about' | 'contact' | 'visualizer' | 'livelab' | 'community'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'shop' | 'quiz' | 'about' | 'contact' | 'visualizer' | 'livelab' | 'community' | 'datalab'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -58,7 +59,8 @@ const App: React.FC = () => {
       case 'quiz': return <Quiz navigate={setCurrentPage} />;
       case 'visualizer': return <Visualizer />;
       case 'livelab': return <LiveLab />;
-      case 'community': return <Community navigate={setCurrentPage} />; // Add Community page case
+      case 'datalab': return <DataLab />;
+      case 'community': return <Community navigate={setCurrentPage} />;
       case 'about': return <About />;
       case 'contact': return <Contact />;
       default: return <Home navigate={setCurrentPage} addToCart={addToCart} onViewDetails={setSelectedProduct} />;

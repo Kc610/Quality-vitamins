@@ -37,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({ cartCount, onOpenCart, setCurrentPage, 
 
   const navItems = [
     { label: 'FUEL STACK', id: 'shop' },
+    { label: 'DATA LAB', id: 'datalab' },
     { label: 'BIO-QUIZ', id: 'quiz' },
     { label: 'COMMUNITY', id: 'community' },
     { label: 'VISUAL LAB', id: 'visualizer' },
