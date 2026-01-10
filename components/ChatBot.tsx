@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, User, Activity, BrainCircuit, Link as LinkIcon, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Send, User, Activity, BrainCircuit, Link as LinkIcon, Loader2, AlertTriangle, Mic, MicOff } from 'lucide-react';
 import { ChatMessage } from '../types.ts';
 import { useGemini } from '../hooks/useGemini.ts';
 
@@ -12,12 +11,52 @@ interface DisplayMessage extends ChatMessage {
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const [messages, setMessages] = useState<DisplayMessage[]>([
     { role: 'model', text: "Roger that, Athlete. I'm Atlas, your Elite Performance Node. State your objective, and we'll engineer your victory." }
   ]);
+  
   const { isLoading, streamingResponse, citations, error, generateStream } = useGemini();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const isStreamingRef = useRef(false);
+
+  // Initialize Web Speech API
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      setIsListening(true);
+      recognitionRef.current?.start();
+    }
+  };
 
   useEffect(() => {
     isStreamingRef.current = isLoading;
@@ -27,7 +66,6 @@ const ChatBot: React.FC = () => {
   }, [streamingResponse, isLoading, messages]);
 
   useEffect(() => {
-    // When streaming is finished, add the complete response to the history
     if (!isLoading && streamingResponse && !isStreamingRef.current) {
       setMessages(prev => [...prev, { role: 'model', text: streamingResponse, citations: citations }]);
     }
@@ -133,13 +171,22 @@ const ChatBot: React.FC = () => {
 
         <div className="p-6 border-t border-gray-100 bg-white flex-shrink-0">
           <form className="flex gap-3" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
-            <input 
-              type="text" 
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="State objective..."
-              className="flex-grow bg-hh-light border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-hh-green/20 transition-all placeholder:text-gray-400 text-hh-dark"
-            />
+            <div className="relative flex-grow">
+              <input 
+                type="text" 
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={isListening ? "Listening for objective..." : "State objective..."}
+                className={`w-full bg-hh-light border-none rounded-xl pl-5 pr-12 py-4 text-sm font-bold focus:ring-2 focus:ring-hh-green/20 transition-all placeholder:text-gray-400 text-hh-dark ${isListening ? 'ring-2 ring-hh-green/40' : ''}`}
+              />
+              <button 
+                type="button"
+                onClick={toggleListening}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all ${isListening ? 'bg-hh-green text-hh-dark animate-pulse' : 'text-gray-400 hover:text-hh-green'}`}
+              >
+                {isListening ? <Mic className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
+            </div>
             <button 
               type="submit"
               disabled={!input.trim() || isLoading}
@@ -148,6 +195,11 @@ const ChatBot: React.FC = () => {
               {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6" />}
             </button>
           </form>
+          {isListening && (
+            <div className="mt-2 text-[10px] font-black uppercase text-hh-green tracking-widest animate-pulse text-center">
+              Neural Audio Link Active
+            </div>
+          )}
         </div>
       </div>
     </>

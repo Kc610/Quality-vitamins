@@ -1,0 +1,55 @@
+﻿import os
+from flask import Flask, request, jsonify, render_template_string
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def home():
+    return render_template_string("""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: 'Inter', sans-serif; background: #0b0e14; color: #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+            <div style="background: #1a1f2e; padding: 2rem; border-radius: 1rem; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 80%; text-align: center;">
+                <h1 style="color: #38bdf8;">Hello Healthy AI</h1>
+                <p>Biological Performance Engine: <span style="color: #4ade80;">Active</span></p>
+                <textarea id="userInput" style="width: 100%; height: 100px; border-radius: 0.5rem; background: #0f172a; border: 1px solid #334155; color: white; padding: 10px;" placeholder="Describe performance goals..."></textarea><br><br>
+                <button onclick="askAI()" style="background: #38bdf8; color: #0f172a; border: none; padding: 12px 24px; border-radius: 0.5rem; font-weight: bold; cursor: pointer;">Generate Analysis</button>
+                <div id="response" style="margin-top: 20px; font-style: italic; text-align: left;"></div>
+            </div>
+            <script>
+                async function askAI() {
+                    const text = document.getElementById('userInput').value;
+                    const resDiv = document.getElementById('response');
+                    resDiv.innerText = "Processing biological data...";
+                    const response = await fetch('/analyze', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({data: text})
+                    });
+                    const result = await response.json();
+                    resDiv.innerText = result.insight;
+                }
+            </script>
+        </body>
+        </html>
+    """)
+
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    user_input = request.json.get('data')
+    ai_response = model.generate_content(f"You are a biological performance coach. Analyze this: {user_input}")
+    return jsonify({"insight": ai_response.text})
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))

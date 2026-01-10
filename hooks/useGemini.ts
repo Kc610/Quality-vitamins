@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { GoogleGenAI, Content } from "@google/genai";
+import { GoogleGenAI, Content, GenerateContentResponse } from "@google/genai";
 import { ChatMessage } from '../types.ts';
 
 interface Citation {
@@ -24,7 +24,7 @@ export const useGemini = () => {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
       const contents: Content[] = history.map(msg => ({
-        role: msg.role,
+        role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }]
       }));
 
@@ -32,9 +32,8 @@ export const useGemini = () => {
         model: 'gemini-3-pro-preview',
         contents: contents,
         config: {
-          temperature: 1,
+          temperature: 0.7,
           topP: 0.95,
-          maxOutputTokens: 65535,
           thinkingConfig: {
             thinkingBudget: 32768,
           },
@@ -44,19 +43,21 @@ export const useGemini = () => {
 
       let fullResponseText = '';
       for await (const chunk of stream) {
-        const chunkText = chunk.text;
+        const c = chunk as GenerateContentResponse;
+        const chunkText = c.text;
+        
         if (chunkText) {
           fullResponseText += chunkText;
           setStreamingResponse(fullResponseText);
         }
 
-        const groundingChunks = chunk.candidates?.[0]?.groundingMetadata?.groundingChunks;
+        const groundingChunks = c.candidates?.[0]?.groundingMetadata?.groundingChunks;
         if (groundingChunks) {
           const newCitations: Citation[] = groundingChunks
-            .filter(c => c.web && c.web.uri)
-            .map(c => ({
-              uri: c.web.uri,
-              title: c.web.title || 'Source',
+            .filter(chunk => chunk.web && chunk.web.uri)
+            .map(chunk => ({
+              uri: chunk.web!.uri!,
+              title: chunk.web!.title || 'Source',
             }));
           
           setCitations(prev => {
@@ -68,7 +69,7 @@ export const useGemini = () => {
       }
     } catch (e: any) {
       console.error("Gemini Hook Error:", e);
-      setError(e.message || "An error occurred during synthesis.");
+      setError(e.message || "An error occurred during biological synthesis.");
     } finally {
       setIsLoading(false);
     }

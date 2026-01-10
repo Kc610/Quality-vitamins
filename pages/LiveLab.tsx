@@ -81,7 +81,7 @@ const LiveLab: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
             setIsActive(true);
@@ -130,7 +130,7 @@ const LiveLab: React.FC = () => {
               errMsg.includes("Requested entity was not found") || 
               errMsg.includes("RESOURCE_EXHAUSTED") || 
               errMsg.includes("quota exceeded") ||
-              e.type === "error"; // Some socket errors report type only
+              e.type === "error";
 
             if (isBillingError) {
               setError("Session failed. A Paid API Key is required for this model.");
