@@ -16,8 +16,10 @@ const BrandLogo = () => (
       <svg viewBox="0 0 100 100" className="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
         <rect x="20" y="20" width="15" height="60" rx="2" fill="#111111" />
         <rect x="65" y="20" width="15" height="60" rx="2" fill="#111111" />
-        <rect x="35" y="42" width="30" height="15" rx="1" fill="#4CAF50" />
-        <circle cx="50" cy="50" r="10" fill="#4CAF50" className="animate-pulse" />
+        {/* Central horizontal bridge with subtle pulse */}
+        <rect x="35" y="42" width="30" height="15" rx="1" fill="#4CAF50" className="animate-pulse opacity-80" />
+        {/* Core biological node with pulse */}
+        <circle cx="50" cy="50" r="10" fill="#4CAF50" className="animate-pulse shadow-[0_0_15px_#4CAF50]" />
       </svg>
     </div>
   </div>

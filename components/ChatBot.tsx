@@ -1,9 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, User, Activity, BrainCircuit, Link as LinkIcon, Loader2, AlertTriangle, Mic, MicOff } from 'lucide-react';
+import { X, Send, User, Activity, BrainCircuit, Link as LinkIcon, Loader2, AlertTriangle, Mic, MicOff, Volume2, VolumeX, RefreshCw } from 'lucide-react';
 import { ChatMessage } from '../types.ts';
 import { useGemini } from '../hooks/useGemini.ts';
+import { GoogleGenAI, Modality } from "@google/genai";
 
-// Augment ChatMessage type locally for display purposes
+// Audio Decoding Utilities
+const decodeBase64 = (base64: string) => {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+};
+
+const decodeAudioData = async (data: Uint8Array, ctx: AudioContext): Promise<AudioBuffer> => {
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length;
+  const buffer = ctx.createBuffer(1, frameCount, 24000);
+  const channelData = buffer.getChannelData(0);
+  for (let i = 0; i < frameCount; i++) {
+    channelData[i] = dataInt16[i] / 32768.0;
+  }
+  return buffer;
+};
+
 interface DisplayMessage extends ChatMessage {
   citations?: { uri: string; title: string; }[];
 }
@@ -12,6 +33,8 @@ const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isVoiceOutputEnabled, setIsVoiceOutputEnabled] = useState(true);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [messages, setMessages] = useState<DisplayMessage[]>([
     { role: 'model', text: "Roger that, Athlete. I'm Atlas, your Elite Performance Node. State your objective, and we'll engineer your victory." }
   ]);
@@ -19,9 +42,11 @@ const ChatBot: React.FC = () => {
   const { isLoading, streamingResponse, citations, error, generateStream } = useGemini();
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const currentAudioSource = useRef<AudioBufferSourceNode | null>(null);
   const isStreamingRef = useRef(false);
 
-  // Initialize Web Speech API
+  // Initialize Web Speech API (Input)
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -29,22 +54,12 @@ const ChatBot: React.FC = () => {
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
-
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setInput(transcript);
         setIsListening(false);
       };
-
-      recognition.onerror = (event: any) => {
-        console.error("Speech recognition error", event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
+      recognition.onend = () => setIsListening(false);
       recognitionRef.current = recognition;
     }
   }, []);
@@ -58,6 +73,51 @@ const ChatBot: React.FC = () => {
     }
   };
 
+  const playTTS = async (text: string) => {
+    if (!isVoiceOutputEnabled) return;
+    
+    try {
+      setIsSpeaking(true);
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      }
+
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-preview-tts",
+        contents: [{ parts: [{ text }] }],
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: 'Puck' }, // Professional authoritative voice
+            },
+          },
+        },
+      });
+
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      if (base64Audio) {
+        if (currentAudioSource.current) {
+          currentAudioSource.current.stop();
+        }
+
+        const audioBuffer = await decodeAudioData(decodeBase64(base64Audio), audioContextRef.current);
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContextRef.current.destination);
+        source.onended = () => setIsSpeaking(false);
+        source.start();
+        currentAudioSource.current = source;
+      } else {
+        setIsSpeaking(false);
+      }
+    } catch (err) {
+      console.error("TTS Synthesis Failed:", err);
+      setIsSpeaking(false);
+    }
+  };
+
   useEffect(() => {
     isStreamingRef.current = isLoading;
     if (scrollRef.current) {
@@ -66,13 +126,23 @@ const ChatBot: React.FC = () => {
   }, [streamingResponse, isLoading, messages]);
 
   useEffect(() => {
+    // When stream ends, play the TTS
     if (!isLoading && streamingResponse && !isStreamingRef.current) {
       setMessages(prev => [...prev, { role: 'model', text: streamingResponse, citations: citations }]);
+      if (isVoiceOutputEnabled) {
+        playTTS(streamingResponse);
+      }
     }
   }, [isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+    
+    // Stop any current speaking
+    if (currentAudioSource.current) {
+      currentAudioSource.current.stop();
+      setIsSpeaking(false);
+    }
 
     const userMessage: ChatMessage = { role: 'user', text: input };
     const newHistory = [...messages, userMessage];
@@ -103,17 +173,31 @@ const ChatBot: React.FC = () => {
         
         <div className="p-6 bg-hh-dark text-white flex items-center justify-between relative flex-shrink-0">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-hh-green rounded-2xl flex items-center justify-center border-2 border-white/10 animate-pulse">
-              <Activity className="w-6 h-6 text-hh-dark" />
+            <div className={`w-12 h-12 bg-hh-green rounded-2xl flex items-center justify-center border-2 border-white/10 ${isSpeaking ? 'animate-pulse scale-110 shadow-[0_0_20px_rgba(76,175,80,0.6)]' : ''}`}>
+              <Activity className={`w-6 h-6 text-hh-dark ${isSpeaking ? 'animate-bounce' : ''}`} />
             </div>
             <div>
               <h3 className="font-heading font-black uppercase text-xl sm:text-2xl tracking-tighter italic">ATLAS NODE</h3>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`w-2 h-2 rounded-full shadow-[0_0_10px] ${isLoading ? 'bg-hh-orange animate-ping shadow-hh-orange' : 'bg-hh-green shadow-hh-green'}`}></span>
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-400">{isLoading ? 'Synthesizing...' : 'Biological Core Synced'}</span>
+                <span className={`w-2 h-2 rounded-full shadow-[0_0_10px] ${isLoading || isSpeaking ? 'bg-hh-orange animate-ping shadow-hh-orange' : 'bg-hh-green shadow-hh-green'}`}></span>
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-400">
+                  {isSpeaking ? 'Neural Link Active' : isLoading ? 'Synthesizing...' : 'Biological Core Synced'}
+                </span>
               </div>
             </div>
           </div>
+          <button 
+            onClick={() => {
+              setIsVoiceOutputEnabled(!isVoiceOutputEnabled);
+              if (isVoiceOutputEnabled && currentAudioSource.current) {
+                currentAudioSource.current.stop();
+                setIsSpeaking(false);
+              }
+            }}
+            className={`p-3 rounded-xl transition-all border ${isVoiceOutputEnabled ? 'bg-hh-green/10 border-hh-green/30 text-hh-green' : 'bg-white/5 border-white/10 text-gray-500'}`}
+          >
+            {isVoiceOutputEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          </button>
         </div>
 
         <div ref={scrollRef} className="flex-grow p-6 overflow-y-auto space-y-8 bg-white scroll-smooth no-scrollbar">
@@ -126,6 +210,11 @@ const ChatBot: React.FC = () => {
                 <div className="space-y-3">
                   <div className={`p-6 rounded-[2rem] text-sm leading-relaxed font-bold shadow-sm border ${m.role === 'user' ? 'bg-hh-dark text-white border-transparent rounded-tr-none' : 'bg-hh-light text-hh-dark border-gray-100 rounded-tl-none italic'}`}>
                     {m.text}
+                    {m.role === 'model' && i === messages.length - 1 && !isLoading && (
+                      <button onClick={() => playTTS(m.text)} className="ml-3 inline-block opacity-30 hover:opacity-100 transition-opacity">
+                        <RefreshCw className="w-3 h-3 text-hh-green" />
+                      </button>
+                    )}
                   </div>
                   {m.citations && m.citations.length > 0 && (
                     <div className="bg-hh-light/50 p-4 rounded-2xl border border-gray-100 space-y-3">
@@ -195,9 +284,9 @@ const ChatBot: React.FC = () => {
               {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6" />}
             </button>
           </form>
-          {isListening && (
+          {(isListening || isSpeaking) && (
             <div className="mt-2 text-[10px] font-black uppercase text-hh-green tracking-widest animate-pulse text-center">
-              Neural Audio Link Active
+              {isSpeaking ? 'Voice Transmission Active' : 'Neural Audio Link Active'}
             </div>
           )}
         </div>
