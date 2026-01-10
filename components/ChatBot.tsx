@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, User, Activity, BrainCircuit, Link as LinkIcon, Loader2, AlertTriangle, Mic, MicOff, Volume2, VolumeX, RefreshCw } from 'lucide-react';
+import { X, Send, User, Activity, BrainCircuit, Link as LinkIcon, Loader2, AlertTriangle, Mic, MicOff, Volume2, VolumeX, RefreshCw, Bell, BellOff } from 'lucide-react';
 import { ChatMessage } from '../types.ts';
 import { useGemini } from '../hooks/useGemini.ts';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -34,6 +34,7 @@ const ChatBot: React.FC = () => {
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isVoiceOutputEnabled, setIsVoiceOutputEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [messages, setMessages] = useState<DisplayMessage[]>([
     { role: 'model', text: "Roger that, Athlete. I'm Atlas, your Elite Performance Node. State your objective, and we'll engineer your victory." }
@@ -46,9 +47,59 @@ const ChatBot: React.FC = () => {
   const currentAudioSource = useRef<AudioBufferSourceNode | null>(null);
   const isStreamingRef = useRef(false);
 
+  // Procedural Sound Synthesis
+  const playSystemSound = (type: 'send' | 'receive' | 'open') => {
+    if (!isSoundEnabled) return;
+    
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+    }
+    
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') ctx.resume();
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    const now = ctx.currentTime;
+    
+    if (type === 'send') {
+      // Futuristic high-to-low "whoosh"
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    } else if (type === 'receive') {
+      // Dual-tone digital notification
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    } else if (type === 'open') {
+      // Low electronic swell
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(100, now);
+      osc.frequency.exponentialRampToValueAtTime(200, now + 0.3);
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.linearRampToValueAtTime(0.1, now + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    }
+  };
+
   // Initialize Web Speech API (Input)
   useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
@@ -126,9 +177,10 @@ const ChatBot: React.FC = () => {
   }, [streamingResponse, isLoading, messages]);
 
   useEffect(() => {
-    // When stream ends, play the TTS
+    // When stream ends, play the TTS and notification sound
     if (!isLoading && streamingResponse && !isStreamingRef.current) {
       setMessages(prev => [...prev, { role: 'model', text: streamingResponse, citations: citations }]);
+      playSystemSound('receive');
       if (isVoiceOutputEnabled) {
         playTTS(streamingResponse);
       }
@@ -137,6 +189,8 @@ const ChatBot: React.FC = () => {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+    
+    playSystemSound('send');
     
     // Stop any current speaking
     if (currentAudioSource.current) {
@@ -153,10 +207,15 @@ const ChatBot: React.FC = () => {
     await generateStream(newHistory);
   };
 
+  const handleToggleOpen = () => {
+    if (!isOpen) playSystemSound('open');
+    setIsOpen(!isOpen);
+  };
+
   return (
     <>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleOpen}
         className={`fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-[120] w-20 h-20 sm:w-24 sm:h-24 rounded-[2rem] flex items-center justify-center transition-all shadow-[0_30px_60px_rgba(76,175,80,0.5)] group border-4 border-white ${isOpen ? 'bg-hh-dark' : 'bg-hh-green hover:scale-110 active:scale-95'}`}
       >
         {isOpen ? (
@@ -186,18 +245,28 @@ const ChatBot: React.FC = () => {
               </div>
             </div>
           </div>
-          <button 
-            onClick={() => {
-              setIsVoiceOutputEnabled(!isVoiceOutputEnabled);
-              if (isVoiceOutputEnabled && currentAudioSource.current) {
-                currentAudioSource.current.stop();
-                setIsSpeaking(false);
-              }
-            }}
-            className={`p-3 rounded-xl transition-all border ${isVoiceOutputEnabled ? 'bg-hh-green/10 border-hh-green/30 text-hh-green' : 'bg-white/5 border-white/10 text-gray-500'}`}
-          >
-            {isVoiceOutputEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsSoundEnabled(!isSoundEnabled)}
+              className={`p-3 rounded-xl transition-all border ${isSoundEnabled ? 'bg-hh-green/10 border-hh-green/30 text-hh-green' : 'bg-white/5 border-white/10 text-gray-500'}`}
+              title="Toggle System Sounds"
+            >
+              {isSoundEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+            </button>
+            <button 
+              onClick={() => {
+                setIsVoiceOutputEnabled(!isVoiceOutputEnabled);
+                if (isVoiceOutputEnabled && currentAudioSource.current) {
+                  currentAudioSource.current.stop();
+                  setIsSpeaking(false);
+                }
+              }}
+              className={`p-3 rounded-xl transition-all border ${isVoiceOutputEnabled ? 'bg-hh-green/10 border-hh-green/30 text-hh-green' : 'bg-white/5 border-white/10 text-gray-500'}`}
+              title="Toggle Neural Voice"
+            >
+              {isVoiceOutputEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         <div ref={scrollRef} className="flex-grow p-6 overflow-y-auto space-y-8 bg-white scroll-smooth no-scrollbar">
