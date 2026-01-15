@@ -51,7 +51,6 @@ const Footer: React.FC<FooterProps> = ({ setCurrentPage }) => {
             <ul className="space-y-4 text-sm text-gray-400 font-bold">
               <li><button onClick={() => setCurrentPage('shop')} className="hover:text-hh-green transition-colors uppercase tracking-tight">Shop All</button></li>
               <li><button onClick={() => setCurrentPage('quiz')} className="hover:text-hh-green transition-colors uppercase tracking-tight">Transformation Quiz</button></li>
-              <li><button onClick={() => setCurrentPage('community')} className="hover:text-hh-green transition-colors uppercase tracking-tight">Community Hub</button></li>
               <li><button onClick={() => setCurrentPage('visualizer')} className="hover:text-hh-green transition-colors flex items-center gap-2 uppercase tracking-tight"><Sparkles className="w-3 h-3"/> AI Studio</button></li>
               <li><button onClick={() => setCurrentPage('about')} className="hover:text-hh-green transition-colors uppercase tracking-tight">Our Mission</button></li>
             </ul>

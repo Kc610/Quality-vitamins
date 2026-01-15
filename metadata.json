@@ -1,9 +1,8 @@
 {
-  "name": "Hello Healthy | Biological Performance",
-  "description": "A high-octane e-commerce platform for biological optimization. Featuring generative brand vision via Veo 3.1 and neural-insights via Gemini 3.",
+  "name": "Hello Healthy - Modern Supplement Store",
+  "description": "A high-energy, clean, and modern e-commerce platform for lab-tested purity supplements, featuring a personalized transformation quiz and plant-based science.",
   "requestFramePermissions": [
     "camera",
-    "microphone",
-    "geolocation"
+    "microphone"
   ]
 }

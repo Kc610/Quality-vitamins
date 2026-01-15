@@ -14,9 +14,14 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: Category.AMINO,
     price: 19.90,
     description: 'Clean, holistic way to support normal serotonin levels and emotional well-being.',
+    longDescription: 'Our 5-HTP is derived from the seeds of the Griffonia simplicifolia plant. It serves as a direct precursor to serotonin, the neurotransmitter responsible for mood regulation, sleep cycles, and appetite suppression. By bypassing the rate-limiting step of tryptophan hydroxylase, our formula ensures rapid biological availability.',
+    ingredients: '5-Hydroxytryptophan (from Griffonia simplicifolia), Vegetable Cellulose (capsule), Rice Flour.',
+    suggestedUse: 'Take 1 capsule daily, preferably on an empty stomach before bedtime, or as directed by a healthcare professional.',
+    benefits: ['Supports Emotional Balance', 'Promotes Deep Sleep Cycles', 'Natural Appetite Regulation', '99% Pure Plant Synthesis'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044019636-generated-label-image-0.jpg?v=1758045639',
-    tags: ['Mood', 'Amino'],
-    isBestSeller: true
+    tags: ['Mood', 'Neural Drive'],
+    isBestSeller: true,
+    stockLevel: 12
   },
   {
     id: 'whey-isolate-chocolate',
@@ -25,18 +30,27 @@ export const INITIAL_PRODUCTS: Product[] = [
     price: 49.90,
     salePrice: 42.00,
     description: 'Premium chocolate whey isolate for muscle development and rapid recovery.',
+    longDescription: 'Engineered through cross-flow microfiltration (CFM), this isolate retains vital sub-fractions while eliminating fat and lactose. With 25g of pure protein per scoop and a complete BCAA profile, it is the gold standard for post-training biological reconstruction.',
+    ingredients: 'Cold-Filtered Whey Protein Isolate, Natural Cocoa, Stevia Leaf Extract, Sunflower Lecithin.',
+    suggestedUse: 'Mix 1 scoop with 8-10 oz of cold water or nut milk. Consume within 45 minutes post-workout.',
+    benefits: ['Rapid Protein Synthesis', 'Lean Muscle Retention', 'Zero Bloat Formula', 'High Bio-Availability'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044351820-generated-label-image-0.jpg?v=1758045651',
-    tags: ['Protein', 'Muscle'],
-    isNew: true
+    tags: ['Muscle', 'Tissue Repair'],
+    isNew: true,
+    stockLevel: 4
   },
   {
     id: 'alpha-energy',
     name: 'Alpha Energy Men\'s Vitality',
     category: Category.SPECIALTY,
     price: 40.90,
-    description: 'Support vitality, muscle mass, and energy levels without testosterone.',
+    description: 'Support vitality, muscle mass, and energy levels without exogenous hormones.',
+    longDescription: 'A synergistic blend of Fenugreek, Tribulus Terrestris, and Zinc designed to optimize the body\'s natural endocrine environment. It focuses on increasing free testosterone availability and reducing cortisol-induced catabolism.',
+    ingredients: 'Fenugreek Extract, Tribulus Terrestris, Zinc Citrate, Vitamin D3, Magnesium Aspartate.',
+    suggestedUse: 'Take 2 capsules in the morning with food. Do not exceed 4 capsules in a 24-hour period.',
+    benefits: ['Enhanced Natural Vitality', 'Improved Recovery Rate', 'Optimized Libido Support', 'Cortisol Regulation'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044108339-generated-label-image-0.jpg?v=1758045643',
-    tags: ['Men', 'Vitality']
+    tags: ['Vitality', 'Metabolic Edge']
   },
   {
     id: 'ashwagandha',
@@ -44,8 +58,13 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: Category.NATURAL_EXTRACTS,
     price: 23.90,
     description: 'Powerful adaptogen that helps individuals manage and calm stress levels.',
+    longDescription: 'Standardized to 5% Withanolides, our KSM-66 Ashwagandha is the most clinically studied version available. It modulates the HPA axis to lower serum cortisol levels and improve systemic resilience to physical and mental stressors.',
+    ingredients: 'Organic Ashwagandha Root Extract (KSM-66), Black Pepper Extract (for absorption).',
+    suggestedUse: 'Take 1 capsule twice daily with meals.',
+    benefits: ['Reduces Serum Cortisol', 'Improves Sleep Quality', 'Supports Adrenal Health', 'Cognitive Resilience'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044025355-generated-label-image-0.jpg?v=1758045639',
-    tags: ['Stress', 'Herbal']
+    tags: ['Stress', 'Neural Drive'],
+    isBestSeller: true
   },
   {
     id: 'bee-bread-powder',
@@ -53,8 +72,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: Category.NATURAL_EXTRACTS,
     price: 47.90,
     description: 'Concentrated bee bread, propolis, and royal jelly for smoothie optimization.',
+    longDescription: 'Fermented by bees within the hive, Bee Bread (Perga) is 3x more bio-available than raw pollen. It is nature\'s most complete superfood, containing every essential amino acid, a vast array of vitamins, and unique enzymatic compounds.',
+    ingredients: 'Natural Perga (Bee Bread), Lyophilized Royal Jelly, Propolis Extract.',
+    suggestedUse: 'Add 1 teaspoon to your morning smoothie or yogurt.',
+    benefits: ['Micro-Nutrient Density', 'Immune System Modulation', 'Enhanced Energy Metabolism', 'Gut Microbiome Support'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044324225-generated-label-image-0.jpg?v=1758045649',
-    tags: ['Superfood', 'Vitality']
+    tags: ['Immune', 'Metabolic Edge']
   },
   {
     id: 'beetroot-powder',
@@ -62,17 +85,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: Category.SPECIALTY,
     price: 35.90,
     description: 'Promotes healthy blood flow and circulation, ideal for post-workout recovery.',
+    longDescription: 'High-nitrate concentration derived from organic Beta vulgaris. Nitrates are converted to Nitric Oxide in the body, which vasodilates blood vessels, increasing oxygen delivery to working muscles and enhancing aerobic endurance.',
+    ingredients: 'Organic Beetroot Powder, Malic Acid, Natural Black Cherry Flavor.',
+    suggestedUse: 'Mix 1 scoop with water 30 minutes before exercise.',
+    benefits: ['Nitric Oxide Booster', 'Improved VO2 Max', 'Lower Blood Pressure Support', 'Endurance Optimization'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044337102-generated-label-image-0.jpg?v=1758045652',
-    tags: ['Blood Flow', 'Endurance']
-  },
-  {
-    id: 'birch-chaga-truffles',
-    name: 'Birch Chaga Truffles',
-    category: Category.NATURAL_EXTRACTS,
-    price: 49.90,
-    description: 'Rich source of fulvic and humic acids for gut health and immune support.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044160404-generated-label-image-0.jpg?v=1758045646',
-    tags: ['Gut Health', 'Immune']
+    tags: ['Endurance', 'Metabolic Edge']
   },
   {
     id: 'creatine-mono',
@@ -80,46 +98,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: Category.AMINO,
     price: 33.90,
     description: 'Unlock full athletic potential by supporting muscle protein synthesis.',
+    longDescription: '200-mesh micronized creatine for maximum solubility. Creatine phosphate is the primary fuel source for ATP-PCr energy systems, allowing for increased power output during high-intensity short-duration activities.',
+    ingredients: '100% Pure Micronized Creatine Monohydrate.',
+    suggestedUse: 'Mix 1 scoop (5g) with water daily. No loading phase required.',
+    benefits: ['Increased Peak Power', 'Cellular Hydration', 'Cognitive Function Support', 'Muscle Volume Expansion'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044066488-generated-label-image-0.jpg?v=1758045640',
-    tags: ['Strength', 'Power']
-  },
-  {
-    id: 'colostrum-capsules',
-    name: 'Bovine Colostrum Capsules',
-    category: Category.SPECIALTY,
-    price: 35.00,
-    description: 'Nutrient-dense immunoglobulins (IgG) for immune and gut lining integrity.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044348188-generated-label-image-0.jpg?v=1758045651',
-    tags: ['Immune', 'Gut'],
-    isBestSeller: true
-  },
-  {
-    id: 'dog-dental-wipes',
-    name: 'Doggie Dental Wipes',
-    category: Category.PET_WELLNESS,
-    price: 17.00,
-    description: 'Easy alternative to brushing! pH balanced to match canine saliva.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044258202-generated-label-image-0.jpg?v=1758045648',
-    tags: ['Pet', 'Dental']
-  },
-  {
-    id: 'energy-powder-melon',
-    name: 'Energy Powder (Melon Creamsicle)',
-    category: Category.PRE_WORKOUT,
-    price: 34.99,
-    description: 'Balanced boost with caffeine and L-theanine for smooth, sustained lift.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758061341311-generated-label-image-0.jpg?v=1758061376',
-    tags: ['Energy', 'Focus'],
-    isNew: true
-  },
-  {
-    id: 'fat-burner-mct',
-    name: 'Fat Burner with MCT',
-    category: Category.SPECIALTY,
-    price: 33.90,
-    description: 'Facilitates metabolic performance and weight loss via thermogenesis.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044104075-generated-label-image-0.jpg?v=1758045644',
-    tags: ['Metabolism', 'Weight']
+    tags: ['Strength', 'Tissue Repair']
   },
   {
     id: 'mushroom-coffee-fusion',
@@ -127,36 +111,13 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: Category.FOOD_BEV,
     price: 19.90,
     description: 'Lion\'s Mane and Chaga infused Arabica for cognitive enhancement.',
+    longDescription: 'Combine the ritual of coffee with the neural-optimizing power of medicinal mushrooms. Lion\'s Mane promotes Nerve Growth Factor (NGF) for focus, while Chaga provides the antioxidant base to prevent the jitters associated with raw caffeine.',
+    ingredients: 'Organic Arabica Coffee, Lion\'s Mane Extract, Chaga Extract.',
+    suggestedUse: 'Brew as you would normal coffee. Use 2 tablespoons per 8 oz of water.',
+    benefits: ['Sustained Neural Focus', 'Zero Coffee Crash', 'Neuro-Protective Properties', 'Metabolic Kickstart'],
     image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044046542-generated-label-image-0.jpg?v=1758045639',
-    tags: ['Nootropic', 'Coffee'],
+    tags: ['Nootropic', 'Neural Drive'],
     isBestSeller: true
-  },
-  {
-    id: 'nitric-shock',
-    name: 'Nitric Shock Pre-Workout',
-    category: Category.PRE_WORKOUT,
-    price: 38.90,
-    description: '23 advanced nutrients designed to push you beyond your limits.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044096655-generated-label-image-0.jpg?v=1758045643',
-    tags: ['Pump', 'Strength']
-  },
-  {
-    id: 'probiotic-40b',
-    name: 'Probiotic 40 Billion',
-    category: Category.SPECIALTY,
-    price: 30.90,
-    description: 'MAKTREK Bi-Pass Technology for superior gut health delivery.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044138371-generated-label-image-0.jpg?v=1758045645',
-    tags: ['Gut', 'Immune']
-  },
-  {
-    id: 'sea-moss',
-    name: 'Sea Moss Wellness',
-    category: Category.NATURAL_EXTRACTS,
-    price: 25.90,
-    description: 'Organic Bladderwrack and Burdock root for total biological immunity.',
-    image: 'https://cdn.shopify.com/s/files/1/0678/4928/9863/files/1758044215560-generated-label-image-0.jpg?v=1758045646',
-    tags: ['Superfood', 'Detox']
   }
 ];
 
