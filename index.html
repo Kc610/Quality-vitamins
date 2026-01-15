@@ -12,10 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     
     <script>
-      // Shim process.env for browser environments to prevent crashes
-      window.process = window.process || { env: { API_KEY: "" } };
+      // Shim process.env for browser environments safely
+      if (typeof window.process === 'undefined') {
+        window.process = { env: { API_KEY: "" } };
+      } else if (typeof window.process.env === 'undefined') {
+        window.process.env = { API_KEY: "" };
+      }
       
-      // DIAGNOSTIC ERROR CATCHER - Shows errors directly on screen if the app fails to boot
+      // DIAGNOSTIC ERROR CATCHER
       window.addEventListener('error', function(e) {
         if (e.message && (e.message.includes('importmap') || e.message.includes('Module'))) {
             console.error('Boot Error:', e);
@@ -32,9 +36,9 @@
                 FILE: ${e.filename || 'Check browser console for details'}<br>
                 LINE: ${e.lineno || 'N/A'}<br><br>
                 <em>Diagnostic Checklist:</em><br>
-                1. Ensure your host serves .tsx files as 'application/javascript'.<br>
-                2. Verify index.tsx is in the same folder as index.html.<br>
-                3. Ensure your site is running on HTTPS for AI features.
+                1. Ensure your host serves .tsx files correctly.<br>
+                2. Verify index.tsx is in the root folder.<br>
+                3. Check the console for API link failures.
             </div>
         `;
         document.body.appendChild(errorDiv);

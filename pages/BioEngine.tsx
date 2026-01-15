@@ -33,7 +33,6 @@ const BioEngine: React.FC = () => {
   const [isResearchMode, setIsResearchMode] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Video Generation States
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [videoStatus, setVideoStatus] = useState<string>('');
@@ -103,7 +102,10 @@ const BioEngine: React.FC = () => {
     setGeneratedVideoUrl(null);
 
     try {
-      // Create new AI instance to ensure current API Key
+      if (!(await (window as any).aistudio.hasSelectedApiKey())) {
+        await (window as any).aistudio.openSelectKey();
+      }
+
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const tools = isResearchMode ? [{ googleSearch: {} }] : [];
       
@@ -117,7 +119,7 @@ const BioEngine: React.FC = () => {
           FORMAT: 
           1. BIO-ANALYSIS (Identify weaknesses and neural states)
           2. PROTOCOL DIRECTIVES (Exact actionable steps)
-          3. RECOMMENDED HELLO HEALTHY STACK (Specific supplements from our catalog like 5-HTP, Ashwagandha, Bee Bread, or Creatine)
+          3. RECOMMENDED HELLO HEALTHY STACK (Specific supplements like Ashwagandha, Bee Bread, or Creatine)
           TONE: Aggressive, high-performance coaching. Technical but motivating. Use Markdown.`,
         config: { 
           thinkingConfig: { thinkingBudget: 8000 },
@@ -128,7 +130,6 @@ const BioEngine: React.FC = () => {
       const result = response.text || "Analysis complete. Node standby.";
       setProtocol(result);
 
-      // Extract Grounding Citations
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
       if (chunks) {
         const extractedSources = chunks
@@ -140,7 +141,11 @@ const BioEngine: React.FC = () => {
       speakBriefing(result);
     } catch (err: any) {
       console.error("Analysis Failed:", err);
-      setError(err.message || "Neural link severed. Re-initialize.");
+      const msg = err.message || "";
+      if (msg.includes("Requested entity was not found")) {
+        await (window as any).aistudio.openSelectKey();
+      }
+      setError(msg || "Neural link severed. Re-initialize.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -155,7 +160,6 @@ const BioEngine: React.FC = () => {
 
     try {
       if (!(await (window as any).aistudio.hasSelectedApiKey())) {
-        setVideoStatus('Awaiting API Key Selection...');
         await (window as any).aistudio.openSelectKey();
       }
 
@@ -164,7 +168,7 @@ const BioEngine: React.FC = () => {
       setVideoStatus('Synthesizing Visual State...');
       let operation = await ai.models.generateVideos({
         model: 'veo-3.1-fast-generate-preview',
-        prompt: `Cinematic performance commercial for Hello Healthy. An elite athlete achieving peak state based on this protocol: ${protocol.substring(0, 500)}. 4k, hyper-realistic, volumetric lighting, epic sports cinematography.`,
+        prompt: `Cinematic performance commercial for Hello Healthy. An elite athlete achieving peak state based on this protocol: ${protocol.substring(0, 500)}. 4k, hyper-realistic, volumetric lighting.`,
         config: {
           numberOfVideos: 1,
           resolution: '1080p',
@@ -187,6 +191,10 @@ const BioEngine: React.FC = () => {
       setGeneratedVideoUrl(URL.createObjectURL(blob));
     } catch (err: any) {
       console.error("Video Generation Error:", err);
+      const msg = err.message || "";
+      if (msg.includes("Requested entity was not found")) {
+        await (window as any).aistudio.openSelectKey();
+      }
       setError("Video synthesis failed. Verification of paid project tier required.");
     } finally {
       setIsGeneratingVideo(false);
@@ -196,7 +204,6 @@ const BioEngine: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-hh-dark text-white pt-24 pb-32 px-4 relative overflow-hidden">
-      {/* Background Grid Effect */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ 
         backgroundImage: `radial-gradient(circle at 2px 2px, #4CAF50 1px, transparent 0)`,
         backgroundSize: '40px 40px'
@@ -214,7 +221,6 @@ const BioEngine: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Controls Column */}
           <div className="lg:col-span-4 space-y-8">
             <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3.5rem] p-8 md:p-10 space-y-10 shadow-2xl">
               <div className="space-y-6">
@@ -283,7 +289,6 @@ const BioEngine: React.FC = () => {
             </div>
           </div>
 
-          {/* Results/Display Column */}
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[4rem] p-10 md:p-16 h-full min-h-[700px] flex flex-col relative overflow-hidden shadow-2xl">
                {isAnalyzing ? (
@@ -416,22 +421,6 @@ const BioEngine: React.FC = () => {
                                </button>
                             </div>
                           )}
-                          
-                          <div className="bg-white/5 rounded-[2.5rem] p-8 border border-white/5 space-y-6">
-                             <div className="flex items-center gap-3">
-                                <TrendingUp className="w-5 h-5 text-hh-green" />
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Performance Delta</h4>
-                             </div>
-                             <div className="space-y-4">
-                                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                                   <div className="h-full bg-hh-green w-[85%] animate-in slide-in-from-left duration-1000"></div>
-                                </div>
-                                <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-gray-500">
-                                   <span>Baseline Output</span>
-                                   <span className="text-hh-green">Target: +24% Performance</span>
-                                </div>
-                             </div>
-                          </div>
                        </div>
                     </div>
                  </div>
@@ -456,33 +445,9 @@ const BioEngine: React.FC = () => {
                     </div>
                  </div>
                )}
-
-               {/* Decorative Side Elements */}
-               <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-20 hidden xl:flex flex-col gap-4">
-                  {[...Array(12)].map((_, i) => (
-                    <div key={i} className="w-1.5 h-1.5 bg-hh-green rounded-full"></div>
-                  ))}
-               </div>
             </div>
           </div>
         </div>
-
-        {/* Action Bar */}
-        {protocol && !isAnalyzing && (
-          <div className="mt-16 flex flex-col md:flex-row gap-8 items-center justify-center">
-             <button 
-              onClick={() => { setProtocol(null); setGeneratedVideoUrl(null); }} 
-              className="px-14 py-6 bg-white/5 border border-white/10 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white/10 transition-all"
-             >
-                WIPE BUFFER
-             </button>
-             <button 
-              className="px-16 py-6 bg-hh-dark border-4 border-hh-green text-hh-green rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-hh-green hover:text-hh-dark transition-all flex items-center gap-4 group shadow-4xl shadow-hh-green/20"
-             >
-                EXPORT ASSET LAB <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
-             </button>
-          </div>
-        )}
       </div>
     </div>
   );
